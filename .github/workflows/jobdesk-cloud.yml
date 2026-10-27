@@ -12,6 +12,10 @@ on:
         description: 'Chỉ quét và cập nhật trang, chưa gửi Gmail'
         type: boolean
         default: true
+      send_test:
+        description: 'Gửi một thư thử từ cloud khi dry_run đã tắt'
+        type: boolean
+        default: false
 
 concurrency:
   group: jobdesk-cloud
@@ -52,6 +56,13 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           JOBDESK_BOOTSTRAP: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap && 'true' || 'false' }}
           JOBDESK_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
+      - name: Test Gmail delivery from cloud
+        if: github.event_name == 'workflow_dispatch' && inputs.send_test && !inputs.dry_run
+        run: bun run tools/cloud-mail-test.ts
+        env:
+          JOBDESK_SETTINGS: ${{ secrets.JOBDESK_SETTINGS }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
       - name: Save encrypted state
         if: always() && steps.scan.outcome != 'skipped' && hashFiles('.cloud-state/state.enc') != ''
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
