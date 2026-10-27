@@ -38,8 +38,9 @@ Không đưa mật khẩu, khóa hoặc JSON bộ lọc vào workflow YAML, Git 
 
 ## Phục hồi
 
-Tải artifact `jobdesk-state-…` của lượt thành công mới nhất; ZIP chỉ có `state.enc` đã mã hóa. Khôi phục chính file này vào Actions cache có prefix `jobdesk-state-v1-`, hoặc thay `cloud/seed.enc` bằng file đó rồi chạy thủ công với bootstrap. Không tạo khóa lưu mới nếu vẫn cần mở dữ liệu cũ. Không bootstrap bằng seed cũ sau khi đã gửi nhiều thư: việc đó có thể làm báo lại các tin từ sau thời điểm seed.
+Tải artifact `jobdesk-state-…` của lượt thành công mới nhất; ZIP chỉ có `state.enc` đã mã hóa. Khôi phục chính file này vào Actions cache có prefix `jobdesk-state-v2-`, hoặc thay `cloud/seed.enc` bằng file đó rồi chạy thủ công với bootstrap. Không tạo khóa lưu mới nếu vẫn cần mở dữ liệu cũ. Không bootstrap bằng seed cũ sau khi đã gửi nhiều thư: việc đó có thể làm báo lại các tin từ sau thời điểm seed.
 
 Tắt lịch: **Actions → JobDesk Cloud → … → Disable workflow**. Đổi bộ lọc/địa chỉ nhận: sửa secret `JOBDESK_SETTINGS`, chạy lại workflow không bật bootstrap. Không cần sửa mã nguồn.
 
 Nếu SMTP gửi thành công nhưng runner bị dừng trước khi lưu cache, lần kế tiếp có thể báo lặp một thư. Lịch sử gửi không thể bảo đảm giao dịch nguyên tử với máy chủ SMTP.
+
