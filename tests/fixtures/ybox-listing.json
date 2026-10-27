@@ -1,0 +1,24 @@
+{
+  "data": {
+    "SearchPosts": {
+      "count": 6,
+      "edges": [
+        {
+          "_id": "6adc68503ce3747d04d918a6",
+          "title": "[HCM] Công Ty Giáo Dục Số Edtronaut Tuyển Dụng Thực Tập Sinh Kỹ Sư AI (AI Engineer Intern) Full-time 2026",
+          "slug": null,
+          "summary": "Edtronaut là nền tảng công nghệ giáo dục và phát triển nguồn nhân lực dựa trên trí tuệ nhân tạo (AI-powered Workforce Development & EdTech Platform), tiên phong trong việc nâng cao",
+          "publishedAt": "Sat Oct 24 2026 15:12:00 GMT+0700 (Indochina Time)",
+          "deadline": "Sun Nov 08 2026 23:59:59 GMT+0700 (Indochina Time)",
+          "active": true,
+          "deleted": false,
+          "forceDeleted": false,
+          "community": {
+            "url": "tuyen-dung",
+            "name": "Tuyển dụng"
+          }
+        }
+      ]
+    }
+  }
+}

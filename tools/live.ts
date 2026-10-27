@@ -1,0 +1,10 @@
+import {mkdirSync} from 'node:fs';
+import {search,detail} from '../src/sources';
+import {SOURCES,defaults,type Source} from '../src/types';
+mkdirSync('data',{recursive:true});
+const selected=process.argv.find(a=>a.startsWith('--sources='))?.slice(10).split(',')||[...SOURCES];
+if(selected.some(s=>!SOURCES.includes(s as Source)))throw Error('Nguồn kiểm tra không hợp lệ.');
+const settings={...defaults,query:process.argv.find(a=>a.startsWith('--query='))?.slice(8)||defaults.query};
+const results=await Promise.all((selected as Source[]).map(async source=>{const start=Date.now();try{const jobs=await search(source,settings);let example=null;let detailError='';if(jobs[0]){try{const d=await detail(jobs[0].url);example={url:d.url,title:d.title,verified:d.verified,descriptionLength:d.description.length,postedAt:d.postedAt,active:d.active};if(!d.verified)detailError='JD chưa được xác minh đầy đủ.';}catch(e){detailError=String(e);}}const result={source,status:'ok',count:jobs.length,example,detailError,ms:Date.now()-start};console.log(JSON.stringify(result));return result;}catch(e){const result={source,status:'error',error:String(e),ms:Date.now()-start};console.log(JSON.stringify(result));return result;}}));
+await Bun.write('data/live-check.json',JSON.stringify({time:new Date().toISOString(),query:settings.query,results},null,2));
+if(results.some(x=>x.status==='error'||('detailError' in x&&x.detailError)))process.exitCode=1;

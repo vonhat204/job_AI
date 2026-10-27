@@ -1,0 +1,11 @@
+import nodemailer from 'nodemailer';
+import {escapeHtml} from './security';
+import {assess} from './rank';
+import type {Job,Settings} from './types';
+import type {Store} from './store';
+export function mailReady(){return !!(process.env.GMAIL_USER&&process.env.GMAIL_APP_PASSWORD);}
+export function mailBody(jobs:Job[]){return `<div style="font-family:Arial,sans-serif;max-width:650px"><h2>JobDesk · Việc mới dành cho bạn</h2><p>Các tin vượt bộ lọc trong ứng dụng. Hãy đọc lại JD trên trang tuyển dụng trước khi nộp hồ sơ.</p>${jobs.map(j=>`<div style="padding:16px 0;border-top:1px solid #ddd"><h3><a href="${escapeHtml(j.url)}">${escapeHtml(j.title)}</a></h3><p>${escapeHtml(j.company)} · ${escapeHtml(j.location)}</p><p>${escapeHtml(j.source)} · Điểm khớp ${j.score}/100</p><p><a href="${escapeHtml(j.url)}">Xem tin tuyển dụng và ứng tuyển ↗</a></p><p style="font-size:12px;word-break:break-all">Đường link gốc: ${escapeHtml(j.url)}</p></div>`).join('')}<p>Thay đổi bộ lọc hoặc tắt thông báo trong JobDesk.</p></div>`;}
+export function mailText(html:string){return html.replace(/<\/(?:p|h[1-6]|div)>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").trim();}
+export async function sendMail(to:string,subject:string,html:string){if(!mailReady())throw new Error('Chưa cấu hình Gmail gửi thư. Điền GMAIL_USER và GMAIL_APP_PASSWORD trong .env rồi khởi động lại.');const transport=nodemailer.createTransport({service:'gmail',auth:{user:process.env.GMAIL_USER,pass:process.env.GMAIL_APP_PASSWORD},connectionTimeout:15000,socketTimeout:20000});try{return await transport.sendMail({from:process.env.GMAIL_USER,to,subject,html,text:mailText(html)});}finally{transport.close();}}
+export async function notifyJobs(store:Store,s:Settings,sender=sendMail){if(!s.notifications)return 0;const jobs=store.jobs().filter(j=>!j.searchQuery||j.searchQuery===s.query).map(j=>({...j,...assess(j,s)})).filter(j=>j.verdict==='match'&&j.score>=s.minScore&&!j.duplicateOf&&!['hidden','applied'].includes(j.status||'')&&!store.notified(`${s.recipient}:${j.id}`)).slice(0,20);if(!jobs.length)return 0;await sender(s.recipient,`[JobDesk] ${jobs.length} việc mới phù hợp`,mailBody(jobs));for(const j of jobs)store.markNotified(`${s.recipient}:${j.id}`);return jobs.length;}
+
